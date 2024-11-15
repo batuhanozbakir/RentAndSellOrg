@@ -46,7 +46,12 @@ builder.Services.AddIdentity<Kullanici, IdentityRole>()
 
 #region JWT Authentication kodlarý
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(opt =>
+				{
+					opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+					opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+				})
+		
 			.AddJwtBearer(opt =>
 			{
 				opt.TokenValidationParameters = new TokenValidationParameters
