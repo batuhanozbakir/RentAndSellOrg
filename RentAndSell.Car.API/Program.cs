@@ -1,12 +1,15 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using RentAndSell.Car.API;
 using RentAndSell.Car.API.Data;
 using RentAndSell.Car.API.Data.Entities.Concrete;
 using RentAndSell.Car.API.Services;
 using System.Text;
 using HttpMethod = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpMethod;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,13 +39,40 @@ builder.Services.AddIdentity<Kullanici, IdentityRole>()
 //						context.Response.StatusCode = StatusCodes.Status403Forbidden;
 //						return Task.CompletedTask;
 //					};
-//				}); 
+//				});
 #endregion
 
 
 
 builder.Services.AddControllers();
 
+builder.Services.AddSwaggerGen( opt =>
+{
+	opt.SwaggerDoc("v1", new OpenApiInfo { Title = "Rent And Sell Car API",Version = "v1"});
+	opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+	{
+		In = ParameterLocation.Header,
+		Description = "Lütfen token deðerinizi giriniz",
+		Name = "Authorization",
+		Type = SecuritySchemeType.Http,
+		BearerFormat = "JWT",
+		Scheme = "bearer"
+	});
+	opt.AddSecurityRequirement(new OpenApiSecurityRequirement
+	{
+		{
+			new OpenApiSecurityScheme
+			{
+				Reference = new OpenApiReference
+				{
+					Type = ReferenceType.SecurityScheme,
+					Id = "Bearer"
+				}
+			},
+			new string[] {}
+		}
+	});
+});
 
 var app = builder.Build();
 
@@ -52,6 +82,12 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseSwagger();
+app.UseSwaggerUI(s =>
+{
+	s.SwaggerEndpoint("/swagger/v1/swagger.json", "Swagger");
+});
 
 app.MapControllers();
 
